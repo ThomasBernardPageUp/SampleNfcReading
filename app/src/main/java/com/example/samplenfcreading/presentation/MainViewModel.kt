@@ -21,7 +21,13 @@ class MainViewModel : ViewModel() {
     private var nfcAdapter : NfcAdapter? = null
     private var readingJob : Job? = null
     private val dispatcherIO  = Dispatchers.IO
-    private val flags = NfcAdapter.FLAG_READER_NFC_A or NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK
+    private val flags = NfcAdapter.FLAG_READER_NFC_A or
+//            NfcAdapter.FLAG_READER_NFC_B or
+//            NfcAdapter.FLAG_READER_NFC_F or
+//            NfcAdapter.FLAG_READER_NFC_V or
+            NfcAdapter.FLAG_READER_NFC_BARCODE or
+            NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK
+
     private val options = Bundle().apply {  }
 
     fun onEvent(event: MainEvent) {
@@ -32,11 +38,12 @@ class MainViewModel : ViewModel() {
 
                     if (nfcAdapter?.isEnabled == true){
                         Log.e("MainViewModel", "NFC is enabled, disable it before enabling reader mode")
+                        nfcAdapter?.disableForegroundDispatch(event.activity)
                         nfcAdapter?.disableReaderMode(event.activity)
                     }
 
+                    _uiState.update { it.copy(reading = true, tagId = "", techList = emptyList()) }
                     nfcAdapter?.enableReaderMode(event.activity, { onTagDetected(it) }, flags, options)
-                    _uiState.update { it.copy(reading = true, tagId = "", message = "") }
                 }
                 is MainEvent.OnRestartNFCReading -> {
                     Log.d("MainViewModel", "onRestartReader")
@@ -45,9 +52,10 @@ class MainViewModel : ViewModel() {
                         return
                     }
 
+                    nfcAdapter?.disableForegroundDispatch(event.activity)
                     nfcAdapter?.disableReaderMode(event.activity)
+                    _uiState.update { it.copy(reading = true, tagId = "", techList = emptyList()) }
                     nfcAdapter?.enableReaderMode(event.activity, { onTagDetected(it) }, flags, options)
-                    _uiState.update { it.copy(reading = true, tagId = "", message = "") }
                 }
                 is MainEvent.OnStopNFCReading -> {
                     Log.d("MainViewModel", "onStopReading")
@@ -60,12 +68,12 @@ class MainViewModel : ViewModel() {
                     nfcAdapter?.disableForegroundDispatch(event.activity)
                     nfcAdapter?.disableReaderMode(event.activity)
                     nfcAdapter = null
-                    _uiState.update { it.copy(reading = false, tagId = "", message = "") }
+                    _uiState.update { it.copy(reading = false, tagId = "", techList = emptyList()) }
                 }
             }
         }
         catch (e : Exception){
-            _uiState.update { it.copy(message = e.message ?: "An error occurred", reading = false) }
+            e.printStackTrace()
         }
     }
 
@@ -82,6 +90,6 @@ class MainViewModel : ViewModel() {
 
     private suspend fun onTagDiscovered(tag: Tag){
         Log.d("MainViewModel", "onTagDiscovered $tag")
-        _uiState.update { it.copy(tagId = tag.id.toString()) }
+        _uiState.update { it.copy(tagId = tag.id.toString(), techList = tag.techList.map { it.toString() }) }
     }
 }

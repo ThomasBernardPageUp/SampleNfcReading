@@ -70,7 +70,7 @@ fun MainScreen(uiState : MainUiState, onEvent : (MainEvent) -> Unit) {
             )
 
             Text(
-                text = stringResource(id = R.string.message, uiState.message)
+                text = stringResource(id = R.string.tech_list, uiState.techList.joinToString(", "))
             )
         }
     }

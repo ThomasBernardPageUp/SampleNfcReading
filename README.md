@@ -1,1 +1,92 @@
 # SampleNfcReading
+
+To simulate an NFC bug, switch between the start and stop buttons while removing the NFC card from the phone.
+
+At first, it works, but after a few attempts, an error appears in Logcat:
+
+```logcat
+android.os.DeadObjectException
+    at android.os.BinderProxy.transactNative(Native Method)
+    at android.os.BinderProxy.transact(BinderProxy.java:540)
+    at android.nfc.INfcAdapter$Stub$Proxy.setReaderMode(INfcAdapter.java:1022)
+    at android.nfc.NfcActivityManager.setReaderMode(NfcActivityManager.java:242)
+    at android.nfc.NfcActivityManager.enableReaderMode(NfcActivityManager.java:218)
+    at android.nfc.NfcAdapter.enableReaderMode(NfcAdapter.java:1594)
+    at com.example.samplenfcreading.presentation.MainViewModel.onEvent(MainViewModel.kt:38)
+    at com.example.samplenfcreading.ComposableSingletons$MainActivityKt$lambda-1$1$1.invoke(MainActivity.kt:22)
+    at com.example.samplenfcreading.ComposableSingletons$MainActivityKt$lambda-1$1$1.invoke(MainActivity.kt:22)
+    at com.example.samplenfcreading.presentation.MainScreenKt$MainScreen$1$1$1.invoke(MainScreen.kt:41)
+    at com.example.samplenfcreading.presentation.MainScreenKt$MainScreen$1$1$1.invoke(MainScreen.kt:35)
+    at androidx.compose.foundation.ClickablePointerInputNode$pointerInput$3.invoke-k-4lQ0M(Clickable.kt:987)
+    at androidx.compose.foundation.ClickablePointerInputNode$pointerInput$3.invoke(Clickable.kt:981)
+    at androidx.compose.foundation.gestures.TapGestureDetectorKt$detectTapAndPress$2$1.invokeSuspend(TapGestureDetector.kt:255)
+    at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+    at kotlinx.coroutines.DispatchedTaskKt.resume(DispatchedTask.kt:179)
+    at kotlinx.coroutines.DispatchedTaskKt.dispatch(DispatchedTask.kt:168)
+    at kotlinx.coroutines.CancellableContinuationImpl.dispatchResume(CancellableContinuationImpl.kt:474)
+    at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl(CancellableContinuationImpl.kt:508)
+    at kotlinx.coroutines.CancellableContinuationImpl.resumeImpl$default(CancellableContinuationImpl.kt:497)
+    at kotlinx.coroutines.CancellableContinuationImpl.resumeWith(CancellableContinuationImpl.kt:368)
+    at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl$PointerEventHandlerCoroutine.offerPointerEvent(SuspendingPointerInputFilter.kt:665)
+    at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl.dispatchPointerEvent(SuspendingPointerInputFilter.kt:544)
+    at androidx.compose.ui.input.pointer.SuspendingPointerInputModifierNodeImpl.onPointerEvent-H0pRuoY(SuspendingPointerInputFilter.kt:566)
+    at androidx.compose.foundation.AbstractClickablePointerInputNode.onPointerEvent-H0pRuoY(Clickable.kt:947)
+    at androidx.compose.foundation.AbstractClickableNode.onPointerEvent-H0pRuoY(Clickable.kt:795)
+    at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:317)
+    at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:303)
+    at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:303)
+    at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:303)
+    at androidx.compose.ui.input.pointer.Node.dispatchMainEventPass(HitPathTracker.kt:303)
+    at androidx.compose.ui.input.pointer.NodeParent.dispatchMainEventPass(HitPathTracker.kt:185)
+    at androidx.compose.ui.input.pointer.HitPathTracker.dispatchChanges(HitPathTracker.kt:104)
+    at androidx.compose.ui.input.pointer.PointerInputEventProcessor.process-BIzXfog(PointerInputEventProcessor.kt:113)
+    at androidx.compose.ui.platform.AndroidComposeView.sendMotionEvent-8iAsVTc(AndroidComposeView.android.kt:1576)
+    at androidx.compose.ui.platform.AndroidComposeView.handleMotionEvent-8iAsVTc(AndroidComposeView.android.kt:1527)
+    at androidx.compose.ui.platform.AndroidComposeView.dispatchTouchEvent(AndroidComposeView.android.kt:1466)
+    at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3199)
+    at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2880)
+    at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3199)
+    at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2880)
+    at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3199)
+    at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2880)
+    at android.view.ViewGroup.dispatchTransformedTouchEvent(ViewGroup.java:3199)
+    at android.view.ViewGroup.dispatchTouchEvent(ViewGroup.java:2880)
+    at com.android.internal.policy.DecorView.superDispatchTouchEvent(DecorView.java:564)
+    at com.android.internal.policy.PhoneWindow.superDispatchTouchEvent(PhoneWindow.java:1929)
+    at android.app.Activity.dispatchTouchEvent(Activity.java:5283)
+    at com.android.internal.policy.DecorView.dispatchTouchEvent(DecorView.java:511)
+    at android.view.View.dispatchPointerEvent(View.java:14569)
+    at android.view.ViewRootImpl$ViewPostImeInputStage.processPointerEvent(ViewRootImpl.java:6018)
+    at android.view.ViewRootImpl$ViewPostImeInputStage.onProcess(ViewRootImpl.java:5821)
+    at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:5312)
+    at android.view.ViewRootImpl$InputStage.onDeliverToNext(ViewRootImpl.java:5369)
+    at android.view.ViewRootImpl$InputStage.forward(ViewRootImpl.java:5335)
+    at android.view.ViewRootImpl$AsyncInputStage.forward(ViewRootImpl.java:5487)
+    at android.view.ViewRootImpl$InputStage.apply(ViewRootImpl.java:5343)
+    at android.view.ViewRootImpl$AsyncInputStage.apply(ViewRootImpl.java:5544)
+    at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:5316)
+    at android.view.ViewRootImpl$InputStage.onDeliverToNext(ViewRootImpl.java:5369)
+    at android.view.ViewRootImpl$InputStage.forward(ViewRootImpl.java:5335)
+    at android.view.ViewRootImpl$InputStage.apply(ViewRootImpl.java:5343)
+    at android.view.ViewRootImpl$InputStage.deliver(ViewRootImpl.java:5316)
+    at android.view.ViewRootImpl.deliverInputEvent(ViewRootImpl.java:8089)
+    at android.view.ViewRootImpl.doProcessInputEvents(ViewRootImpl.java:8040)
+    at android.view.ViewRootImpl.enqueueInputEvent(ViewRootImpl.java:8000)
+    at android.view.ViewRootImpl$WindowInputEventReceiver.onInputEvent(ViewRootImpl.java:8212)
+    at android.view.InputEventReceiver.dispatchInputEvent(InputEventReceiver.java:221)
+    at android.os.MessageQueue.nativePollOnce(Native Method)
+    at android.os.MessageQueue.next(MessageQueue.java:335)
+    at android.os.Looper.loop(Looper.java:183)
+    at android.app.ActivityThread.main(ActivityThread.java:7780)
+    at java.lang.reflect.Method.invoke(Native Method)
+    at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+    at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:952)
+```
+
+After this error, NFC stops working. The only way to make it work again is to restart the app.
+
+```logcat
+NFC service dead - attempting to recover
+```
+
+To make it work again, you need to restart the app by either sending it to the background and reopening it, or by locking and unlocking the phone.
