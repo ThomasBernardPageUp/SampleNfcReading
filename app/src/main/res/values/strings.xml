@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Sample NFC Reading</string>
+
+    <string name="start_reading">Start reading</string>
+    <string name="restart_reader">Restart reader</string>
+    <string name="stop_reading">Stop reading</string>
+
+    <string name="tag_id">Tag ID : %1$s</string>
+    <string name="message">Message : %1$s</string>
+
+</resources>
