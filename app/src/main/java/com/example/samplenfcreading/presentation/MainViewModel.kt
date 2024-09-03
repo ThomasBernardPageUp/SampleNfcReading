@@ -38,7 +38,6 @@ class MainViewModel : ViewModel() {
 
                     if (nfcAdapter?.isEnabled == true){
                         Log.e("MainViewModel", "NFC is enabled, disable it before enabling reader mode")
-                        nfcAdapter?.disableForegroundDispatch(event.activity)
                         nfcAdapter?.disableReaderMode(event.activity)
                     }
 
@@ -52,7 +51,6 @@ class MainViewModel : ViewModel() {
                         return
                     }
 
-                    nfcAdapter?.disableForegroundDispatch(event.activity)
                     nfcAdapter?.disableReaderMode(event.activity)
                     _uiState.update { it.copy(reading = true, tagId = "", techList = emptyList()) }
                     nfcAdapter?.enableReaderMode(event.activity, { onTagDetected(it) }, flags, options)
@@ -65,7 +63,6 @@ class MainViewModel : ViewModel() {
                         return
                     }
 
-                    nfcAdapter?.disableForegroundDispatch(event.activity)
                     nfcAdapter?.disableReaderMode(event.activity)
                     nfcAdapter = null
                     _uiState.update { it.copy(reading = false, tagId = "", techList = emptyList()) }
