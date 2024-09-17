@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -28,7 +29,7 @@ fun MainScreen(uiState : MainUiState, onEvent : (MainEvent) -> Unit) {
     Scaffold {
         Box(
             modifier = Modifier.padding(it).fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.TopStart
         ) {
             Column(
                 modifier = Modifier
@@ -86,7 +87,7 @@ fun MainScreen(uiState : MainUiState, onEvent : (MainEvent) -> Unit) {
 
             if (uiState.downloadingCertificate) {
                 LinearProgressIndicator(
-                    modifier = Modifier.align(Alignment.BottomCenter).background(Color.Red)
+                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
                 )
             }
         }
