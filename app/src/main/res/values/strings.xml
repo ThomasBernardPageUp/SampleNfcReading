@@ -7,4 +7,6 @@
 
     <string name="tag_id">Tag ID : %1$s</string>
     <string name="tech_list">Tech list : %1$s</string>
+    <string name="certificate">Certificat : %1$s</string>
+
 </resources>

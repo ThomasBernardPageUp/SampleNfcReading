@@ -2,16 +2,19 @@ package com.example.samplenfcreading.presentation
 
 import android.nfc.NfcAdapter
 import android.nfc.Tag
+import android.nfc.tech.IsoDep
 import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.samplenfcreading.data.CardUtilities
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
 
@@ -41,7 +44,7 @@ class MainViewModel : ViewModel() {
                         nfcAdapter?.disableReaderMode(event.activity)
                     }
 
-                    _uiState.update { it.copy(reading = true, tagId = "", techList = emptyList()) }
+                    _uiState.update { it.copy(reading = true, tagId = "", techList = emptyList(), certificate = "") }
                     nfcAdapter?.enableReaderMode(event.activity, { onTagDetected(it) }, flags, options)
                 }
                 is MainEvent.OnRestartNFCReading -> {
@@ -52,7 +55,7 @@ class MainViewModel : ViewModel() {
                     }
 
                     nfcAdapter?.disableReaderMode(event.activity)
-                    _uiState.update { it.copy(reading = true, tagId = "", techList = emptyList()) }
+                    _uiState.update { it.copy(reading = true, tagId = "", techList = emptyList(), certificate = "") }
                     nfcAdapter?.enableReaderMode(event.activity, { onTagDetected(it) }, flags, options)
                 }
                 is MainEvent.OnStopNFCReading -> {
@@ -65,7 +68,7 @@ class MainViewModel : ViewModel() {
 
                     nfcAdapter?.disableReaderMode(event.activity)
                     nfcAdapter = null
-                    _uiState.update { it.copy(reading = false, tagId = "", techList = emptyList()) }
+                    _uiState.update { it.copy(reading = false, tagId = "", techList = emptyList(), certificate = "") }
                 }
             }
         }
@@ -88,5 +91,13 @@ class MainViewModel : ViewModel() {
     private suspend fun onTagDiscovered(tag: Tag){
         Log.d("MainViewModel", "onTagDiscovered $tag")
         _uiState.update { it.copy(tagId = tag.id.toString(), techList = tag.techList.map { it.toString() }) }
+
+
+        _uiState.update { it.copy(downloadingCertificate = true) }
+        withContext(Dispatchers.IO){
+            val certificate = CardUtilities.downloadCertificate(tag)
+            _uiState.update { it.copy(downloadingCertificate = false, certificate = certificate) }
+        }
     }
 }
+
