@@ -2,12 +2,12 @@ package com.example.samplenfcreading.presentation
 
 import android.nfc.NfcAdapter
 import android.nfc.Tag
-import android.nfc.tech.IsoDep
 import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.samplenfcreading.data.CardUtilities
+import com.example.samplenfcreading.domain.exceptions.InvalidByteArrayException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,46 +34,41 @@ class MainViewModel : ViewModel() {
     private val options = Bundle().apply {  }
 
     fun onEvent(event: MainEvent) {
-        try {
-            when (event) {
-                is MainEvent.OnStartNFCReading -> {
-                    nfcAdapter = NfcAdapter.getDefaultAdapter(event.activity)
+        when (event) {
+            is MainEvent.OnStartNFCReading -> {
+                nfcAdapter = NfcAdapter.getDefaultAdapter(event.activity)
 
-                    if (nfcAdapter?.isEnabled == true){
-                        Log.e("MainViewModel", "NFC is enabled, disable it before enabling reader mode")
-                        nfcAdapter?.disableReaderMode(event.activity)
-                    }
-
-                    _uiState.update { it.copy(reading = true, tagId = "", techList = emptyList(), certificate = "") }
-                    nfcAdapter?.enableReaderMode(event.activity, { onTagDetected(it) }, flags, options)
-                }
-                is MainEvent.OnRestartNFCReading -> {
-                    Log.d("MainViewModel", "onRestartReader")
-                    if (readingJob?.isActive == true){
-                        Log.i("MainViewModel", "Reading job is active cannot restart reader")
-                        return
-                    }
-
+                if (nfcAdapter?.isEnabled == true){
+                    Log.e("MainViewModel", "NFC is enabled, disable it before enabling reader mode")
                     nfcAdapter?.disableReaderMode(event.activity)
-                    _uiState.update { it.copy(reading = true, tagId = "", techList = emptyList(), certificate = "") }
-                    nfcAdapter?.enableReaderMode(event.activity, { onTagDetected(it) }, flags, options)
                 }
-                is MainEvent.OnStopNFCReading -> {
-                    Log.d("MainViewModel", "onStopReading")
 
-                    if (readingJob?.isActive == true){
-                        Log.i("MainViewModel", "Reading job is active cannot stop reader")
-                        return
-                    }
-
-                    nfcAdapter?.disableReaderMode(event.activity)
-                    nfcAdapter = null
-                    _uiState.update { it.copy(reading = false, tagId = "", techList = emptyList(), certificate = "") }
-                }
+                _uiState.update { it.copy(reading = true, tagId = "", techList = emptyList(), certificateResult = "") }
+                nfcAdapter?.enableReaderMode(event.activity, { onTagDetected(it) }, flags, options)
             }
-        }
-        catch (e : Exception){
-            e.printStackTrace()
+            is MainEvent.OnRestartNFCReading -> {
+                Log.d("MainViewModel", "onRestartReader")
+                if (readingJob?.isActive == true){
+                    Log.i("MainViewModel", "Reading job is active cannot restart reader")
+                    return
+                }
+
+                nfcAdapter?.disableReaderMode(event.activity)
+                _uiState.update { it.copy(reading = true, tagId = "", techList = emptyList(), certificateResult = "") }
+                nfcAdapter?.enableReaderMode(event.activity, { onTagDetected(it) }, flags, options)
+            }
+            is MainEvent.OnStopNFCReading -> {
+                Log.d("MainViewModel", "onStopReading")
+
+                if (readingJob?.isActive == true){
+                    Log.i("MainViewModel", "Reading job is active cannot stop reader")
+                    return
+                }
+
+                nfcAdapter?.disableReaderMode(event.activity)
+                nfcAdapter = null
+                _uiState.update { it.copy(reading = false, tagId = "", techList = emptyList(), certificateResult = "") }
+            }
         }
     }
 
@@ -96,7 +91,7 @@ class MainViewModel : ViewModel() {
         _uiState.update { it.copy(downloadingCertificate = true) }
         withContext(Dispatchers.IO){
             val certificate = CardUtilities.downloadCertificate(tag)
-            _uiState.update { it.copy(downloadingCertificate = false, certificate = certificate) }
+            _uiState.update { it.copy(downloadingCertificate = false, certificateResult = certificate) }
         }
     }
 }

@@ -1,7 +1,5 @@
 package com.example.samplenfcreading.presentation
 
-import java.security.cert.Certificate
-
 data class MainUiState(
     val tagId : String = "",
     val techList : List<String> = emptyList(),
@@ -9,6 +7,6 @@ data class MainUiState(
     val loading : Boolean = false,
     val reading : Boolean = false,
 
-    val certificate : String = "",
+    val certificateResult : String = "",
     val downloadingCertificate: Boolean = false,
 )

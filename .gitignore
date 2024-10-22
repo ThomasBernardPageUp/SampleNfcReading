@@ -3,3 +3,6 @@
 .DS_Store
 /.idea
 local.properties
+/app/debug
+/app/release
+Keystore

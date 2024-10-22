@@ -3,6 +3,8 @@ package com.example.samplenfcreading.data
 import android.nfc.Tag
 import android.nfc.tech.IsoDep
 import android.util.Log
+import com.example.samplenfcreading.domain.exceptions.InvalidByteArrayException
+import kotlin.jvm.Throws
 
 class CardUtilities {
 
@@ -22,49 +24,51 @@ class CardUtilities {
         }
 
         suspend fun downloadCertificate(tag : Tag): String {
-            iso = IsoDep.get(tag)
-            iso?.connect()
-            Log.i("downloadCertificate", "[NFC] - Téléchargement du certificat de l'agent")
+            try {
+                iso = IsoDep.get(tag)
+                iso?.connect()
+                Log.i("downloadCertificate", "[NFC] - Téléchargement du certificat de l'agent")
 
-            var strCertificate = ""
-            val strTemp = ""
-            var again = true
-            var cmdToGetCertificat: ByteArray?
-            var i = 0
-            var data: ByteArray?
+                var strCertificate = ""
+                var again = true
+                var cmdToGetCertificat: ByteArray?
+                var i = 0
+                var data: ByteArray?
 
-            if (login()) {
-                if (transceiveApduCommand(ISO_APDU_IS_APPLICATION_SELECT) && transceiveApduCommand(ISO_APDU_GENERIC_APPLICATION_SELECT) && transceiveApduCommand(ISO_APDU_EF_B002_SELECT)) {
-                    do {
-                        val strhex = String.format("%04x", 231 * i++)
+                if (login()) {
+                    if (transceiveApduCommand(ISO_APDU_IS_APPLICATION_SELECT) && transceiveApduCommand(ISO_APDU_GENERIC_APPLICATION_SELECT) && transceiveApduCommand(ISO_APDU_EF_B002_SELECT)) {
+                        do {
+                            val stringHex = String.format("%04x", 231 * i++)
 
-                        cmdToGetCertificat = combineArray(ISO_APDU_EF_B002_READ,  hexStringToByteArray(strhex))
-                        cmdToGetCertificat = combineArray(cmdToGetCertificat, ISO_APDU_BYTES_READ_ALL)
+                            cmdToGetCertificat = combineArray(ISO_APDU_EF_B002_READ, hexStringToByteArray(stringHex))
+                            cmdToGetCertificat = combineArray(cmdToGetCertificat, ISO_APDU_BYTES_READ_ALL)
 
-                        data = sendApduCommand(cmdToGetCertificat)
+                            data = sendApduCommand(cmdToGetCertificat)
 
-                        if (data.size == 2) {
-                            if ((String.format(
-                                    "%02x",
-                                    data[data.size - 2]
-                                ) + String.format("%02x", data[data.size - 1])) == "6b00"
-                            ) {
-                                again = false
+                            if (data.size == 2) {
+                                if ((String.format("%02x", data[0]) + String.format("%02x", data[data.size - 1])) == "6b00") {
+                                    again = false
+                                }
+                            } else {
+                                for (k in 0 until data.size - 2) {
+                                    strCertificate += String.format("%02x", data[k])
+                                }
                             }
-                        } else {
-                            for (k in 0 until data!!.size - 2) {
-                                strCertificate += String.format("%02x", data!![k])
-                            }
-                        }
-                        data = null
-                    } while (again)
+                        } while (again)
 
-                    Log.d("downloadCertificate", "[NFC] - Certificat de l'agent téléchargé :\n$strCertificate")
-                    return strCertificate
+                        Log.d("downloadCertificate", "[NFC] - Certificat de l'agent téléchargé :\n$strCertificate")
+                        return strCertificate
+                    }
                 }
-            }
 
-            Log.d("downloadCertificate", "[NFC] - Error during login")
+                Log.d("downloadCertificate", "[NFC] - Error during login")
+            }
+            catch (e : InvalidByteArrayException) {
+                Log.e("Card Utilities", e.message)
+            }
+            catch (e : Exception){
+                Log.e("Card Utilities", e.message ?: "An error occurred")
+            }
             return "Error check logcat for more information"
         }
 
@@ -75,14 +79,17 @@ class CardUtilities {
             return ret
         }
 
+        @Throws(IllegalArgumentException::class)
         private fun hexStringToByteArray(s: String): ByteArray {
             val len = s.length
+
+            require(len % 2 == 0) { "La chaîne hexadécimale doit avoir une longueur paire." }
+
             val data = ByteArray(len / 2)
             var i = 0
             while (i < len) {
                 data[i / 2] =
-                    ((s[i].digitToIntOrNull(16) ?: -1 shl 4) + s[i + 1].digitToIntOrNull(16)!!
-                        ?: -1).toByte()
+                    ((s[i].digitToIntOrNull(16) ?: (-1 shl 4)) + s[i + 1].digitToIntOrNull(16)!!).toByte()
                 i += 2
             }
             return data
